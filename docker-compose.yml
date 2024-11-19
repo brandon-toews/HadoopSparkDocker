@@ -1,0 +1,153 @@
+services:
+  namenode:
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 3G
+        reservations:
+          cpus: '1'
+          memory: 2G
+    build:
+      context: .
+      dockerfile: hadoop.Dockerfile
+      args:
+        CONTAINER_VOLUME: /hadoop/dfs/name
+    container_name: namenode
+    hostname: namenode
+    environment:
+      - START_SCRIPT=namenode.sh
+      - CLUSTER_NAME=hadoop-spark-cluster
+      - HADOOP_USER_NAME=hadoop
+      - HDFS_NAMENODE_USER=hadoop
+      - HDFS_DATANODE_USER=hadoop
+      - HDFS_SECONDARYNAMENODE_USER=hadoop
+      - YARN_RESOURCEMANAGER_USER=hadoop
+      - YARN_NODEMANAGER_USER=hadoop
+    ports:
+      - "9870:9870"  # Hadoop NameNode Web UI
+      - "8088:8088"  # Hadoop Resource Manager UI
+    volumes:
+      - hadoop_namenode:/hadoop/dfs/name
+      - hadoop_logs:/opt/hadoop/logs
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9870 && curl -f http://localhost:8088"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - hadoop-spark-net
+
+  datanode:
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 3G
+        reservations:
+          cpus: '1'
+          memory: 2G
+    build:
+      context: .
+      dockerfile: hadoop.Dockerfile
+      args:
+        CONTAINER_VOLUME: /hadoop/dfs/data
+    container_name: datanode
+    hostname: datanode
+    environment:
+      - START_SCRIPT=datanode.sh
+      - CLUSTER_NAME=hadoop-spark-cluster
+      - HADOOP_USER_NAME=hadoop
+      - HDFS_NAMENODE_USER=hadoop
+      - HDFS_DATANODE_USER=hadoop
+      - HDFS_SECONDARYNAMENODE_USER=hadoop
+      - YARN_RESOURCEMANAGER_USER=hadoop
+      - YARN_NODEMANAGER_USER=hadoop
+    ports:
+      - "8042:8042"  # Hadoop Node Manager UI
+    depends_on:
+      namenode:
+        condition: service_healthy
+    volumes:
+      - hadoop_datanode:/hadoop/dfs/data
+      - hadoop_logs:/opt/hadoop/logs
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8042" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - hadoop-spark-net
+
+  spark-master:
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+    build:
+      context: .
+      dockerfile: spark.Dockerfile
+    container_name: spark-master
+    hostname: spark-master
+    environment:
+      - START_SCRIPT=master.sh
+    ports:
+      - "8080:8080"  # Spark Master Web UI
+      - "4040:4040"  # Spark Application UI
+    depends_on:
+      namenode:
+        condition: service_healthy
+      datanode:
+        condition: service_healthy
+    volumes:
+      - spark_data:/opt/spark/data
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - hadoop-spark-net
+
+  spark-worker:
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+    build:
+      context: .
+      dockerfile: spark.Dockerfile
+    container_name: spark-worker
+    hostname: spark-worker
+    environment:
+      - START_SCRIPT=worker.sh
+    depends_on:
+      spark-master:
+        condition: service_healthy
+    volumes:
+      - spark_data:/opt/spark/data
+    networks:
+      - hadoop-spark-net
+
+volumes:
+  hadoop_namenode:
+    name: hadoop_namenode
+  hadoop_datanode:
+    name: hadoop_datanode
+  hadoop_logs:
+    name: hadoop_logs
+  spark_data:
+    name: spark_data
+
+networks:
+  hadoop-spark-net:
+    driver: bridge
+    name: hadoop-spark-net  # Explicitly name the network
