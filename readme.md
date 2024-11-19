@@ -124,6 +124,7 @@ docker cp ./jars namenode:/tmp/
 ```bash
 rm -R ./jars 
 ```
+***Note:*** Use `rmdir /s /q .\jars` for Windows Command Prompt.
 
 6. Upload the copied JARs to HDFS from the Namenode container:
 ```bash
@@ -132,10 +133,7 @@ docker exec -it -u hadoop namenode hdfs dfs -put /tmp/jars /user/spark/
 ### Example 1: Calculate Pi
 From your local machine:
 ```bash
-docker exec -it spark-master spark-submit \
-    --master spark://spark-master:7077 \
-    --class org.apache.spark.examples.SparkPi \
-    /opt/spark/examples/jars/spark-examples_2.12-3.5.0.jar 10
+docker exec -it spark-master spark-submit --master spark://spark-master:7077 --class org.apache.spark.examples.SparkPi /opt/spark/examples/jars/spark-examples_2.12-3.5.0.jar 10
 ```
 ***Note:*** See in browser http://localhost:8080, one application is completed
 ### Example 2: Interactive PySpark with Titanic Dataset
@@ -187,8 +185,7 @@ docker cp datasets/train.csv namenode:/home/hadoop
 ```
 2. Load both files to HDFS:
 ```bash
-docker exec -it -u hadoop namenode hdfs dfs -put /home/hadoop/test.csv /
-docker exec -it -u hadoop namenode hdfs dfs -put /home/hadoop/train.csv /
+docker exec -it -u hadoop namenode hdfs dfs -put /home/hadoop/test.csv /home/hadoop/train.csv /
 ```
 3. Copy `ml_titanic.py` script to the Spark-master container:
 ```bash
