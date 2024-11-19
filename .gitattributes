@@ -1,2 +1,15 @@
-# Auto detect text files and perform LF normalization
+# Set default behavior to automatically normalize line endings
 * text=auto
+
+# Force bash scripts to use LF
+*.sh text eol=lf
+
+# Force Docker and config files to use LF
+Dockerfile text eol=lf
+*.Dockerfile text eol=lf
+docker-compose.yml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Force Python scripts to use LF
+*.py text eol=lf
