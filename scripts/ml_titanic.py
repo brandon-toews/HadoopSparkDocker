@@ -12,7 +12,7 @@ from pyspark.ml.classification import (LogisticRegression,
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 
 
-spark = SparkSession.builder.appName('MLexample').getOrCreate()
+spark = SparkSession.builder.appName('MLexample').master("spark://spark-master:7077").getOrCreate()
 train = spark.read.format("csv").option("header", True).option("separator", ",").load("hdfs://namenode:9000/train.csv")
 test = spark.read.format("csv").option("header", True).option("separator", ",").load("hdfs://namenode:9000/test.csv")
 
