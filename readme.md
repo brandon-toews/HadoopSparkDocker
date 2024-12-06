@@ -99,6 +99,7 @@ exit
 
 ## Part 3: Working with Spark on top of HDFS Cluster 
 ### Creating Directories and Moving Files
+
 1. Make directory in HDFS:
 ```bash
 docker exec -it -u hadoop namenode hdfs dfs -mkdir /spark-history/
@@ -135,7 +136,8 @@ From your local machine:
 ```bash
 docker exec -it spark-master spark-submit --master spark://spark-master:7077 --class org.apache.spark.examples.SparkPi /opt/spark/examples/jars/spark-examples_2.12-3.5.0.jar 10
 ```
-***Note:*** See in browser http://localhost:8080, one application is completed
+***Note:*** See in browser http://localhost:8080, one application is completed. If you are receiving a lot of logging information when running spark jobs run `docker cp ./config/spark/log4j2.properties spark-master:/opt/spark/conf/log4j2.properties` to supress logs.
+
 ### Example 2: Interactive PySpark with Titanic Dataset
 
 1. Copy the Titanic dataset to the Namenode container:
