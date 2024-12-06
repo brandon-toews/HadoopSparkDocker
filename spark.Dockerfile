@@ -33,6 +33,7 @@ WORKDIR $SPARK_HOME
 # Copy all scripts into the image
 COPY ./scripts/spark/ /opt/scripts/
 RUN chmod +x /opt/scripts/*
+COPY ./config/spark/log4j2.properties /opt/spark/conf/log4j2.properties
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 # Dynamic startup script

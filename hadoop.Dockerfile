@@ -43,7 +43,7 @@ RUN chown -R hadoop:hadoop $HADOOP_HOME \
     && chmod -R 755 $HADOOP_HOME/logs
 
 # Copy Hadoop configuration files
-COPY --chown=hadoop:hadoop config/*.xml $HADOOP_CONF_DIR
+COPY --chown=hadoop:hadoop config/hadoop/*.xml $HADOOP_CONF_DIR
 
 # Copy all scripts into the image
 COPY ./scripts/hadoop/ /opt/scripts/
