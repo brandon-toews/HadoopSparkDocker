@@ -140,65 +140,63 @@ docker exec -it spark-master spark-submit --master spark://spark-master:7077 --c
 
 ### Example 2: Interactive PySpark with Titanic Dataset
 
-1. Copy the Titanic dataset to the Namenode container:
+1. Load `titanic.csv` dataset, located in the `/datasets` directory in this repository, into HDFS on the Namenode container:
 ```bash
-docker cp datasets/titanic.csv namenode:/home/hadoop/
+docker exec -it -u hadoop namenode hdfs dfs -put /home/hadoop/datasets/titanic.csv /
 ```
+***Note:*** See contents in HDFS at http://localhost:9870/explorer.html or with `docker exec -it -u hadoop namenode hdfs dfs -ls /`. All files placed in the `/datasets` directory in this repository are accessible at `/home/hadoop/datasets` on the Namenode container.
 
-2. Put file in HDFS:
-```bash
-docker exec -it -u hadoop namenode hdfs dfs -put /home/hadoop/titanic.csv /
-```
-***Note:*** See contents in HDFS at http://localhost:9870/explorer.html or with `docker exec -it -u hadoop namenode hdfs dfs -ls /`
-
-3. Start PySpark shell:
+2. Start PySpark shell:
 ```bash
 docker exec -it spark-master pyspark --master spark://spark-master:7077
 ```
 
-4. In the PySpark shell:
+3. In the PySpark shell:
 ```python
 df = spark.read.format("csv").option("header", True).option("separator", ",").load("hdfs://namenode:9000/titanic.csv")
 df.show()
 ```
 
-5. When finished exit PySpark shell:
+4. When finished exit PySpark shell:
 ```bash
 exit()
 ```
+
 ### Example 3: Running a Spark Script
-
-1. Copy pyspark script to the Spark-master container:
+Run `pyspark-script.py`, located in the `/scripts/custom` directory in this repository, from the Spark-master container:
 ```bash
-docker cp scripts/pyspark-script.py spark-master:/opt/spark/
+docker exec -it spark-master spark-submit /opt/custom-scripts/pyspark-script.py
 ```
-
-2. Run the script from the Spark-master container:
-```bash
-docker exec -it spark-master spark-submit /opt/spark/pyspark-script.py
-```
-***Note:*** While script is running you can see the jobs being run at http://localhost:4040
+***Note:*** While script is running you can see the jobs being run at http://localhost:4040. All files placed in the `/scripts/custom` directory in this repository are accessible at `/opt/custom-scripts` on the Spark-master container.
 
 ### Example 4: Use of an ML in Spark
-1. Copy train and test data to `/home/hadoop` in Namenode container:
+1. Load `train.csv` and `test.csv` datasets, located in the `/datasets` directory in this repository, into HDFS on the Namenode container:
 ```bash
-docker cp datasets/test.csv namenode:/home/hadoop
-docker cp datasets/train.csv namenode:/home/hadoop
+docker exec -it -u hadoop namenode hdfs dfs -put /home/hadoop/datasets/test.csv /home/hadoop/datasets/train.csv /
 ```
-2. Load both files to HDFS:
-```bash
-docker exec -it -u hadoop namenode hdfs dfs -put /home/hadoop/test.csv /home/hadoop/train.csv /
-```
-3. Copy `ml_titanic.py` script to the Spark-master container:
-```bash
-docker cp scripts/ml_titanic.py spark-master:/opt/spark/
-```
+***Note:*** All files placed in the `/datasets` directory in this repository are accessible at `/home/hadoop/datasets` on the Namenode container.
 
-3. Run `ml_titanic.py` script from the Spark-master container:
+2. Run `ml_titanic.py`, located in the `/scripts/custom` directory in this repository, from the Spark-master container:
 ```bash
-docker exec -it spark-master spark-submit /opt/spark/ml_titanic.py
+docker exec -it spark-master spark-submit /opt/custom-scripts/ml_titanic.py
 ```
-***Note:*** While script is running you can see the jobs being run at http://localhost:4040
+***Note:*** While script is running you can see the jobs being run at http://localhost:4040. All files placed in the `/scripts/custom` directory in this repository are accessible at `/opt/custom-scripts` on the Spark-master container.
+
+### Example 5: Running Spark over HDFS using Jupyter Notebooks
+1. If already completed Example 2 in this tutorial then skip to step 2, otherwise... Load `titanic.csv` dataset, located in the `/datasets` directory in this repository, into HDFS on the Namenode container:
+```bash
+docker exec -it -u hadoop namenode hdfs dfs -put /home/hadoop/datasets/titanic.csv /
+```
+2. Go to http://localhost:8888 to access Jupyter Notebooks server.
+
+3. Select `example_notebook.ipynb`.
+
+***Note:*** All files placed in the `/notebooks` directory in this repository are accessible at `/opt/notebooks` on the Spark-master container.
+
+4. Run the first cell to initialize spark session with Spark-master container and read the `titanic.csv` dataset in HDFS from the Namenode container.
+5. Run the second cell to examine the dataset using the established spark session.
+6. Run final cell to stop spark session.
+
 ## Cleanup
 
 To stop all services:

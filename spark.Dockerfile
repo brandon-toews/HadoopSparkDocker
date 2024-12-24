@@ -12,6 +12,8 @@ RUN apt-get update && \
     iputils-ping \
     && rm -rf /var/lib/apt/lists/*
 
+RUN pip3 install numpy pandas jupyter pyspark findspark
+
 # Set Spark version
 ENV SPARK_VERSION=3.5.0
 ENV HADOOP_VERSION=3
@@ -28,14 +30,18 @@ ENV PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
 # Create directory for logs
 RUN mkdir -p $SPARK_HOME/logs
 
+# Create notebooks directory
+RUN mkdir -p /opt/notebooks
+
 WORKDIR $SPARK_HOME
 
 # Copy all scripts into the image
-COPY ./scripts/spark/ /opt/scripts/
-RUN chmod +x /opt/scripts/*
+COPY ./scripts/spark/ /opt/start-scripts/
+RUN chmod +x /opt/start-scripts/*
 COPY ./config/spark/log4j2.properties /opt/spark/conf/log4j2.properties
+
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 # Dynamic startup script
-CMD ["/bin/bash", "-c", "/opt/scripts/$START_SCRIPT"]
+CMD ["/bin/bash", "-c", "/opt/start-scripts/$START_SCRIPT"]
 # CMD ["/master.sh"]

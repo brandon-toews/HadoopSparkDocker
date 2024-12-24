@@ -30,6 +30,7 @@ services:
     volumes:
       - hadoop_namenode:/hadoop/dfs/name
       - hadoop_logs:/opt/hadoop/logs
+      - ./datasets:/home/hadoop/datasets
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:9870 && curl -f http://localhost:8088"]
       interval: 30s
@@ -98,6 +99,7 @@ services:
     ports:
       - "8080:8080"  # Spark Master Web UI
       - "4040:4040"  # Spark Application UI
+      - "8888:8888"  # Jupyter Notebook
     depends_on:
       namenode:
         condition: service_healthy
@@ -105,6 +107,8 @@ services:
         condition: service_healthy
     volumes:
       - spark_data:/opt/spark/data
+      - ./scripts/custom:/opt/custom-scripts
+      - ./notebooks:/opt/notebooks  # Mount for Jupyter notebooks
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080" ]
       interval: 30s
